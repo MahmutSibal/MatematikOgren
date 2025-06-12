@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatematikÖğren - Kapsamlı Matematik Eğitim Platformu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .math {
+            font-size: 1.1em;
+        }
+        .topic-card {
+            transition: all 0.3s ease;
+        }
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .calculator {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+        }
+        .calculator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #4c1d95;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .calculator-body {
+            padding: 15px;
+        }
+        .calc-btn {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .calc-btn:hover {
+            opacity: 0.8;
+        }
+        .calc-btn:active {
+            transform: scale(0.95);
+        }
+        .calc-display {
+            width: 100%;
+            height: 60px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 24px;
+            text-align: right;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: modalopen 0.4s;
+        }
+        @keyframes modalopen {
+            from {opacity: 0; transform: translateY(-60px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        .quiz-option {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .quiz-option:hover {
+            background-color: #f3f4f6;
+        }
+        .quiz-option.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .quiz-option.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4c1d95;
+            transition: width 0.3s ease;
+        }
+        .mobile-menu {
+            display: none;
+        }
+        .mobile-menu-items {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #4c1d95;
+            padding: 10px;
+            z-index: 100;
+        }
+        .mobile-menu-items.active {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .desktop-menu {
+                display: none;
+            }
+            .mobile-menu {
+                display: block;
+            }
+            .modal-content {
+                margin: 15% auto;
+                width: 95%;
+            }
+            .calculator {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+                bottom: 10px;
+            }
+        }
+        /* Konu içeriklerinin görünürlüğünü kontrol etmek için */
+        #topic-content > div[id^="topic-"] {
+            display: none;
+        }
+        #topic-content > div[id^="topic-"].active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-purple-900 to-indigo-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mr-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-2.727 1.17 1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                    </svg>
+                    <h1 class="text-2xl font-bold">MatematikÖğren</h1>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-6 desktop-menu">
+                    <a href="#" class="hover:text-purple-200 transition duration-300" onclick="showHome()">Ana Sayfa</a>
+                    <a href="#" class="hover:text-purple-200 transition duration-300" onclick="showTopics()">Konular</a>
+                    <a href="#" class="hover:text-purple-200 transition duration-300" onclick="showQuizzes()">Testler</a>
+                    <a href="#" class="hover:text-purple-200 transition duration-300" onclick="toggleCalculator()">Hesap Makinesi</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="mobile-menu">
+                    <button id="mobileMenuBtn" class="text-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <div id="mobileMenuItems" class="mobile-menu-items">
+                        <a href="#" class="block py-2 text-white hover:text-purple-200" onclick="showHome(); closeMobileMenu();">Ana Sayfa</a>
+                        <a href="#" class="block py-2 text-white hover:text-purple-200" onclick="showTopics(); closeMobileMenu();">Konular</a>
+                        <a href="#" class="block py-2 text-white hover:text-purple-200" onclick="showQuizzes(); closeMobileMenu();">Testler</a>
+                        <a href="#" class="block py-2 text-white hover:text-purple-200" onclick="toggleCalculator(); closeMobileMenu();">Hesap Makinesi</a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="loginBtn" class="bg-white text-purple-900 px-4 py-2 rounded-lg font-medium hover:bg-purple-100 transition duration-300" onclick="openLoginModal()">Giriş Yap</button>
+                    <button id="registerBtn" class="bg-purple-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-600 transition duration-300" onclick="openRegisterModal()">Kayıt Ol</button>
+                    <div id="userProfile" class="hidden">
+                        <div class="flex items-center cursor-pointer" onclick="toggleProfileMenu()">
+                            <div class="w-10 h-10 rounded-full bg-purple-300 flex items-center justify-center text-purple-900 font-bold mr-2" id="userInitials">JS</div>
+                            <span id="userName" class="mr-1 hidden md:inline">John Smith</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <div id="profileMenu" class="absolute right-4 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="showProfile()">Profilim</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="showProgress()">İlerleme Durumum</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="logout()">Çıkış Yap</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Home Section -->
+        <section id="home" class="mb-12">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="md:flex">
+                    <div class="md:flex-shrink-0 bg-gradient-to-br from-purple-900 to-indigo-800 text-white p-8 md:w-1/2">
+                        <h2 class="text-3xl font-bold mb-4">Matematik Öğrenmeyi Kolaylaştırıyoruz</h2>
+                        <p class="mb-6">Kapsamlı içerikler, interaktif testler ve kişiselleştirilmiş öğrenme deneyimi ile matematik konularını kolayca öğrenin.</p>
+                        <button class="bg-white text-purple-900 px-6 py-3 rounded-lg font-medium hover:bg-purple-100 transition duration-300" onclick="showTopics()">Hemen Başla</button>
+                    </div>
+                    <div class="p-8 md:w-1/2">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Platformumuzda Neler Var?</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <span>8 Temel matematik konusu</span>
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Detaylı formüller ve çözüm yöntemleri</span>
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <span>İnteraktif testler ve alıştırmalar</span>
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Kişisel ilerleme takibi</span>
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Pratik hesap makinesi</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Popüler Konular</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-blue-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Fonksiyonlar</h3>
+                        <p class="text-gray-600 mb-4">Fonksiyon tanımı, işlemleri ve grafikleri</p>
+                        <button class="text-blue-600 font-medium hover:text-blue-800 transition duration-300" onclick="showTopic('functions')">Konuya Git →</button>
+                    </div>
+                </div>
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-green-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Türev</h3>
+                        <p class="text-gray-600 mb-4">Türev tanımı ve temel türev kuralları</p>
+                        <button class="text-green-600 font-medium hover:text-green-800 transition duration-300" onclick="showTopic('derivatives')">Konuya Git →</button>
+                    </div>
+                </div>
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-purple-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Limit</h3>
+                        <p class="text-gray-600 mb-4">Limit tanımı, kuralları ve belirsiz ifadeler</p>
+                        <button class="text-purple-600 font-medium hover:text-purple-800 transition duration-300" onclick="showTopic('limits')">Konuya Git →</button>
+                    </div>
+                </div>
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-red-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Trigonometri</h3>
+                        <p class="text-gray-600 mb-4">Temel trigonometrik oranlar ve özdeşlikler</p>
+                        <button class="text-red-600 font-medium hover:text-red-800 transition duration-300" onclick="showTopic('trigonometry')">Konuya Git →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topics Section -->
+        <section id="topics" class="hidden mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Matematik Konuları</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Topic 1: Functions -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-blue-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">1. Fonksiyonlar</h3>
+                        <p class="text-gray-600 mb-4">Fonksiyon tanımı, işlemleri, bileşkesi ve grafikleri</p>
+                        <button class="text-blue-600 font-medium hover:text-blue-800 transition duration-300" onclick="showTopic('functions')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 2: Polynomials -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-green-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">2. Polinomlar ve Denklemler</h3>
+                        <p class="text-gray-600 mb-4">Denklemler, polinomların çarpımı ve açılımı</p>
+                        <button class="text-green-600 font-medium hover:text-green-800 transition duration-300" onclick="showTopic('polynomials')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 3: Derivatives -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-yellow-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Türev</h3>
+                        <p class="text-gray-600 mb-4">Türev tanımı, kuralları ve uygulamaları</p>
+                        <button class="text-yellow-600 font-medium hover:text-yellow-800 transition duration-300" onclick="showTopic('derivatives')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 4: Limits -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-purple-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">4. Limit</h3>
+                        <p class="text-gray-600 mb-4">Limit tanımı, kuralları ve belirsiz ifadeler</p>
+                        <button class="text-purple-600 font-medium hover:text-purple-800 transition duration-300" onclick="showTopic('limits')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 5: Complex Numbers -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-pink-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">5. Karmaşık Sayılar</h3>
+                        <p class="text-gray-600 mb-4">Karmaşık sayıların gösterimi ve işlemleri</p>
+                        <button class="text-pink-600 font-medium hover:text-pink-800 transition duration-300" onclick="showTopic('complex')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 6: Analytic Geometry -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-indigo-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">6. Analitik Geometri</h3>
+                        <p class="text-gray-600 mb-4">Doğru denklemi, uzaklık formülleri ve çember</p>
+                        <button class="text-indigo-600 font-medium hover:text-indigo-800 transition duration-300" onclick="showTopic('analytic')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 7: Geometry -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-red-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">7. Geometri</h3>
+                        <p class="text-gray-600 mb-4">Üçgen, çember ve alan hesaplamaları</p>
+                        <button class="text-red-600 font-medium hover:text-red-800 transition duration-300" onclick="showTopic('geometry')">Konuyu İncele →</button>
+                    </div>
+                </div>
+                
+                <!-- Topic 8: Trigonometry -->
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-orange-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">8. Trigonometri</h3>
+                        <p class="text-gray-600 mb-4">Trigonometrik oranlar, limitler ve özdeşlikler</p>
+                        <button class="text-orange-600 font-medium hover:text-orange-800 transition duration-300" onclick="showTopic('trigonometry')">Konuyu İncele →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic Content Sections -->
+        <section id="topic-content" class="hidden mb-12">
+            <div class="flex items-center mb-6">
+                <button class="mr-4 text-purple-700 hover:text-purple-900" onclick="showTopics()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 id="topic-title" class="text-2xl font-bold text-gray-800">Konu Başlığı</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md overflow-hidden p-4 md:p-8 mb-8">
+                <!-- Topic content divs will be here -->
+                <!-- Fonksiyonlar -->
+<div id="topic-functions">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Fonksiyonlar</h3>
+    <p class="mb-4">Fonksiyonlar, bir kümenin elemanlarını başka bir kümeye eşleyen kurallardır. Temel işlemler, bileşke ve ters fonksiyon kavramları önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Tanım:</b> \( f: A \to B \) fonksiyonu, A kümesinin her elemanını B kümesinin bir elemanına eşler.<br>
+        <b>Örnek:</b> \( f(x) = 2x + 1 \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Fonksiyon İşlemleri:</b><br>
+        \((f+g)(x) = f(x) + g(x)\)<br>
+        \((f \circ g)(x) = f(g(x))\)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( f(x) = x^2, g(x) = x+1 \) ise \( (f \circ g)(2) = ? \)<br>
+        <i>Çözüm:</i> \( f(g(2)) = f(3) = 9 \)
+    </div>
+</div>
+
+<!-- Polinomlar ve Denklemler -->
+<div id="topic-polynomials">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Polinomlar ve Denklemler</h3>
+    <p class="mb-4">Polinomlar, bir veya daha fazla terimden oluşan cebirsel ifadelerdir. İkinci dereceden denklemler ve kök bulma yöntemleri önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Genel Polinom:</b> \( P(x) = a_nx^n + ... + a_1x + a_0 \)<br>
+        <b>İkinci Dereceden Denklem:</b> \( ax^2 + bx + c = 0 \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Kök Formülü:</b> \( x = \frac{-b \pm \sqrt{b^2-4ac}}{2a} \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( x^2 - 5x + 6 = 0 \) kökleri?<br>
+        <i>Çözüm:</i> \( x_1 = 2, x_2 = 3 \)
+    </div>
+</div>
+
+<!-- Türev -->
+<div id="topic-derivatives">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Türev</h3>
+    <p class="mb-4">Türev, bir fonksiyonun değişim hızını gösterir. Temel türev kuralları ve uygulamaları önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Tanım:</b> \( f'(x) = \lim_{h \to 0} \frac{f(x+h)-f(x)}{h} \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Temel Kurallar:</b><br>
+        \( (x^n)' = n x^{n-1} \)<br>
+        \( (k)' = 0 \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( f(x) = x^3 \) için \( f'(x) = ? \)<br>
+        <i>Çözüm:</i> \( 3x^2 \)
+    </div>
+</div>
+
+<!-- Limit -->
+<div id="topic-limits">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Limit</h3>
+    <p class="mb-4">Limit, bir fonksiyonun belirli bir noktaya yaklaşırken aldığı değeri ifade eder. Belirsiz ifadeler ve temel kurallar önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Tanım:</b> \( \lim_{x \to a} f(x) = L \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Temel Kurallar:</b><br>
+        \( \lim_{x \to a} [f(x) + g(x)] = \lim_{x \to a} f(x) + \lim_{x \to a} g(x) \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( \lim_{x \to 2} (x^2 - 4)/(x-2) \) ?<br>
+        <i>Çözüm:</i> \( \lim_{x \to 2} (x+2) = 4 \)
+    </div>
+</div>
+
+<!-- Karmaşık Sayılar -->
+<div id="topic-complex">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Karmaşık Sayılar</h3>
+    <p class="mb-4">Karmaşık sayılar, reel ve sanal kısımdan oluşur. Temel işlemler ve gösterimler önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Tanım:</b> \( z = a + bi \), \( i^2 = -1 \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Modül:</b> \( |z| = \sqrt{a^2 + b^2} \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( z = 3 + 4i \) için \( |z| = ? \)<br>
+        <i>Çözüm:</i> \( |z| = 5 \)
+    </div>
+</div>
+
+<!-- Analitik Geometri -->
+<div id="topic-analytic">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Analitik Geometri</h3>
+    <p class="mb-4">Analitik geometri, noktalar, doğrular ve çemberler üzerinde cebirsel işlemler yapmayı sağlar.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Doğru Denklemi:</b> \( y = mx + n \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>İki Nokta Arası Uzaklık:</b> \( d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2} \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( (1,2) \) ve \( (4,6) \) noktaları arası uzaklık?<br>
+        <i>Çözüm:</i> \( d = 5 \)
+    </div>
+</div>
+
+<!-- Geometri -->
+<div id="topic-geometry">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Geometri</h3>
+    <p class="mb-4">Geometri, şekillerin özelliklerini ve ölçümlerini inceler. Üçgen, çember ve alan hesaplamaları önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Üçgen Alanı:</b> \( A = \frac{a \cdot h}{2} \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Çember Çevresi:</b> \( C = 2\pi r \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> Yarıçapı 3 olan çemberin alanı?<br>
+        <i>Çözüm:</i> \( A = \pi \cdot 9 \)
+    </div>
+</div>
+
+<!-- Trigonometri -->
+<div id="topic-trigonometry">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Trigonometri</h3>
+    <p class="mb-4">Trigonometri, üçgenlerin açıları ve kenarları arasındaki ilişkileri inceler. Temel oranlar ve özdeşlikler önemlidir.</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Temel Oranlar:</b><br>
+        \( \sin \theta = \frac{karşı}{hipotenüs} \)<br>
+        \( \cos \theta = \frac{komşu}{hipotenüs} \)<br>
+        \( \tan \theta = \frac{karşı}{komşu} \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Özdeşlik:</b> \( \sin^2 \theta + \cos^2 \theta = 1 \)
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <b>Örnek Soru:</b> \( \sin 30^\circ = ? \)<br>
+        <i>Çözüm:</i> \( \frac{1}{2} \)
+    </div>
+</div>
+            </div>
+        </section>
+
+        <!-- Quizzes Section -->
+        <section id="quizzes" class="hidden mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Matematik Testleri</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-blue-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Fonksiyonlar Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 15 dakika</p>
+                        <button class="text-blue-600 font-medium hover:text-blue-800 transition duration-300" onclick="startQuiz('functions')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-green-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Polinomlar Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 15 dakika</p>
+                        <button class="text-green-600 font-medium hover:text-green-800 transition duration-300" onclick="startQuiz('polynomials')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-yellow-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Türev Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 20 dakika</p>
+                        <button class="text-yellow-600 font-medium hover:text-yellow-800 transition duration-300" onclick="startQuiz('derivatives')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-purple-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Limit Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 20 dakika</p>
+                        <button class="text-purple-600 font-medium hover:text-purple-800 transition duration-300" onclick="startQuiz('limits')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-pink-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Karmaşık Sayılar Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 15 dakika</p>
+                        <button class="text-pink-600 font-medium hover:text-pink-800 transition duration-300" onclick="startQuiz('complex')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-indigo-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Analitik Geometri Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 15 dakika</p>
+                        <button class="text-indigo-600 font-medium hover:text-indigo-800 transition duration-300" onclick="startQuiz('analytic')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-red-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Geometri Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 15 dakika</p>
+                        <button class="text-red-600 font-medium hover:text-red-800 transition duration-300" onclick="startQuiz('geometry')">Teste Başla →</button>
+                    </div>
+                </div>
+                
+                <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="h-3 bg-orange-500"></div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Trigonometri Testi</h3>
+                        <p class="text-gray-600 mb-4">10 soru • Süre: 15 dakika</p>
+                        <button class="text-orange-600 font-medium hover:text-orange-800 transition duration-300" onclick="startQuiz('trigonometry')">Teste Başla →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz-content" class="hidden mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <button class="mr-4 text-purple-700 hover:text-purple-900" onclick="showQuizzes()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <h2 id="quiz-title" class="text-2xl font-bold text-gray-800">Test Başlığı</h2>
+                </div>
+                <div class="text-gray-600">
+                    <span id="quiz-timer">15:00</span> kaldı
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-8">
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-600">Soru <span id="current-question">1</span>/<span id="total-questions">10</span></span>
+                        <span class="text-sm font-medium text-gray-600">Puan: <span id="quiz-score">0</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 10%;"></div>
+                    </div>
+                </div>
+
+                <div id="question-container" class="mb-6">
+                    <h3 id="question-text" class="text-lg font-medium text-gray-800 mb-4">Soru metni burada görünecek?</h3>
+                    <div id="options-container" class="space-y-3">
+                        <!-- Options will be added dynamically -->
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button id="prev-question" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition duration-300" disabled>Önceki Soru</button>
+                    <button id="next-question" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition duration-300">Sonraki Soru</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="hidden mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Profil Bilgilerim</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="md:flex">
+                    <div class="md:flex-shrink-0 bg-gradient-to-br from-purple-900 to-indigo-800 text-white p-8 md:w-1/3">
+                        <div class="flex flex-col items-center">
+                            <div class="w-24 h-24 rounded-full bg-purple-300 flex items-center justify-center text-purple-900 text-3xl font-bold mb-4" id="profileInitials">JS</div>
+                            <h3 id="profileName" class="text-xl font-semibold mb-2">John Smith</h3>
+                            <p id="profileEmail" class="text-purple-200">john.smith@example.com</p>
+                        </div>
+                    </div>
+                    <div class="p-8 md:w-2/3">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">İstatistiklerim</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <p class="text-gray-600 mb-1">Tamamlanan Test</p>
+                                <p class="text-2xl font-bold text-purple-900">12</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <p class="text-gray-600 mb-1">Ortalama Puan</p>
+                                <p class="text-2xl font-bold text-purple-900">78%</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <p class="text-gray-600 mb-1">Toplam Çalışma</p>
+                                <p class="text-2xl font-bold text-purple-900">8 saat</p>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">Konu Bazlı Performans</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Fonksiyonlar</span>
+                                    <span class="text-sm font-medium text-gray-700">85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Türev</span>
+                                    <span class="text-sm font-medium text-gray-700">70%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Limit</span>
+                                    <span class="text-sm font-medium text-gray-700">60%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Trigonometri</span>
+                                    <span class="text-sm font-medium text-gray-700">90%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 90%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Calculator -->
+    <div id="calculator" class="calculator">
+        <div class="calculator-header">
+            <span>Hesap Makinesi</span>
+            <button onclick="toggleCalculator()" class="text-white hover:text-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        <div class="calculator-body">
+            <input type="text" class="calc-display" id="calc-display" readonly>
+            <div class="grid grid-cols-4 gap-1">
+                <button class="calc-btn bg-gray-200" onclick="clearCalc()">C</button>
+                <button class="calc-btn bg-gray-200" onclick="appendToCalc('(')">(</button>
+                <button class="calc-btn bg-gray-200" onclick="appendToCalc(')')">)</button>
+                <button class="calc-btn bg-orange-500 text-white" onclick="appendToCalc('/')">/</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('7')">7</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('8')">8</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('9')">9</button>
+                <button class="calc-btn bg-orange-500 text-white" onclick="appendToCalc('*')">×</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('4')">4</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('5')">5</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('6')">6</button>
+                <button class="calc-btn bg-orange-500 text-white" onclick="appendToCalc('-')">-</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('1')">1</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('2')">2</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('3')">3</button>
+                <button class="calc-btn bg-orange-500 text-white" onclick="appendToCalc('+')">+</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('0')">0</button>
+                <button class="calc-btn bg-gray-100" onclick="appendToCalc('.')">.</button>
+                <button class="calc-btn bg-gray-100" onclick="backspace()">⌫</button>
+                <button class="calc-btn bg-purple-600 text-white" onclick="calculate()">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Giriş Yap</h3>
+                <button onclick="closeModal('loginModal')" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                    <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                </div>
+                <div class="mb-6">
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md font-medium hover:bg-purple-700 transition duration-300">Giriş Yap</button>
+                <p class="text-center mt-4 text-sm text-gray-600">Hesabınız yok mu? <a href="#" class="text-purple-600 hover:text-purple-800" onclick="switchToRegister()">Kayıt Ol</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Kayıt Ol</h3>
+                <button onclick="closeModal('registerModal')" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="registerForm">
+                <div class="mb-4">
+                    <label for="registerName" class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                    <input type="text" id="registerName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                </div>
+                <div class="mb-4">
+                    <label for="registerEmail" class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                    <input type="email" id="registerEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                </div>
+                <div class="mb-4">
+                    <label for="registerPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                    <input type="password" id="registerPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                </div>
+                <div class="mb-6">
+                    <label for="registerPasswordConfirm" class="block text-sm font-medium text-gray-700 mb-1">Şifre Tekrar</label>
+                    <input type="password" id="registerPasswordConfirm" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md font-medium hover:bg-purple-700 transition duration-300">Kayıt Ol</button>
+                <p class="text-center mt-4 text-sm text-gray-600">Zaten hesabınız var mı? <a href="#" class="text-purple-600 hover:text-purple-800" onclick="switchToLogin()">Giriş Yap</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quiz Result Modal -->
+    <div id="quizResultModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Test Sonucu</h3>
+                <button onclick="closeModal('quizResultModal')" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="text-center mb-6">
+                <div class="w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                    <span id="resultScore" class="text-3xl font-bold text-purple-800">85%</span>
+                </div>
+                <h4 id="resultMessage" class="text-lg font-medium text-gray-800">Harika! Testi başarıyla tamamladınız.</h4>
+            </div>
+            <div class="mb-6">
+                <h5 class="text-md font-medium text-gray-700 mb-2">Performans Özeti</h5>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex justify-between mb-2">
+                        <span>Doğru Cevaplar:</span>
+                        <span id="correctAnswers" class="font-medium">8/10</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>Tamamlama Süresi:</span>
+                        <span id="completionTime" class="font-medium">12:45</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Kazanılan Puan:</span>
+                        <span id="earnedPoints" class="font-medium">85</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="showQuizzes()" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md font-medium hover:bg-gray-300 transition duration-300">Testlere Dön</button>
+                <button onclick="retakeQuiz()" class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-md font-medium hover:bg-purple-700 transition duration-300">Testi Tekrarla</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentSection = 'home';
+        let currentTopic = null;
+        let currentQuiz = null;
+        let quizTimer = null;
+        let quizTimeLeft = 0;
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let quizScore = 0;
+
+        // Initialize when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup event listeners
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+            
+            // Initialize function graphs
+            initFunctionGraph();
+            initComplexPlane();
+            
+            // Check if user is logged in (from localStorage in this demo)
+            checkLoginStatus();
+        });
+
+        // Navigation functions
+        function showHome() {
+            hideAllSections();
+            document.getElementById('home').classList.remove('hidden');
+            currentSection = 'home';
+        }
+
+        function showTopics() {
+            hideAllSections();
+            document.getElementById('topics').classList.remove('hidden');
+            currentSection = 'topics';
+        }
+
+        function showTopic(topicId) {
+            hideAllSections();
+            document.getElementById('topic-content').classList.remove('hidden');
+
+            // Hide all topic content
+            const topicContents = document.querySelectorAll('#topic-content > div[id^="topic-"]');
+            topicContents.forEach(content => content.classList.remove('active'));
+
+            // Show selected topic
+            const topicDiv = document.getElementById(`topic-${topicId}`);
+            if (topicDiv) topicDiv.classList.add('active');
+
+            // Update title
+            const topicTitles = {
+                'functions': 'Fonksiyonlar',
+                'polynomials': 'Polinomlar ve Denklemler',
+                'derivatives': 'Türev',
+                'limits': 'Limit',
+                'complex': 'Karmaşık Sayılar',
+                'analytic': 'Analitik Geometri',
+                'geometry': 'Geometri',
+                'trigonometry': 'Trigonometri'
+            };
+
+            document.getElementById('topic-title').textContent = topicTitles[topicId];
+            currentTopic = topicId;
+            currentSection = 'topic';
+
+            // Refresh MathJax rendering
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+
+        function showQuizzes() {
+            hideAllSections();
+            document.getElementById('quizzes').classList.remove('hidden');
+            currentSection = 'quizzes';
+            
+            // Clear any running quiz timer
+            if (quizTimer) {
+                clearInterval(quizTimer);
+                quizTimer = null;
+            }
+        }
+
+        function startQuiz(quizId) {
+            if (!currentUser) {
+                openLoginModal();
+                return;
+            }
+            
+            hideAllSections();
+            document.getElementById('quiz-content').classList.remove('hidden');
+            currentSection = 'quiz';
+            currentQuiz = quizId;
+            
+            // Set quiz title
+            const quizTitles = {
+                'functions': 'Fonksiyonlar Testi',
+                'polynomials': 'Polinomlar ve Denklemler Testi',
+                'derivatives': 'Türev Testi',
+                'limits': 'Limit Testi',
+                'complex': 'Karmaşık Sayılar Testi',
+                'analytic': 'Analitik Geometri Testi',
+                'geometry': 'Geometri Testi',
+                'trigonometry': 'Trigonometri Testi'
+            };
+            
+            document.getElementById('quiz-title').textContent = quizTitles[quizId];
+            
+            // Load quiz questions
+            loadQuizQuestions(quizId);
+            
+            // Start timer
+            startQuizTimer();
+            
+            // Setup navigation buttons
+            document.getElementById('prev-question').addEventListener('click', showPreviousQuestion);
+            document.getElementById('next-question').addEventListener('click', showNextQuestion);
+        }
+
+        function showProfile() {
+            hideAllSections();
+            document.getElementById('profile').classList.remove('hidden');
+            currentSection = 'profile';
+            toggleProfileMenu();
+        }
+
+        function hideAllSections() {
+            const sections = ['home', 'topics', 'topic-content', 'quizzes', 'quiz-content', 'profile'];
+            sections.forEach(section => {
+                document.getElementById(section).classList.add('hidden');
+            });
+        }
+        // ...existing code...
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Demo: localStorage ile basit doğrulama
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                closeModal('loginModal');
+                updateUIForLogin();
+                showHome();
+            } else {
+                alert('E-posta veya şifre hatalı!');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                alert('Şifreler uyuşmuyor!');
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.email === email)) {
+                alert('Bu e-posta ile zaten kayıt olunmuş.');
+                return;
+            }
+
+            const newUser = { name, email, password };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Kayıt başarılı! Giriş yapabilirsiniz.');
+            closeModal('registerModal');
+            openLoginModal();
+        }
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                updateUIForLogin();
+            } else {
+                updateUIForLogout();
+            }
+        }
+
+        function updateUIForLogin() {
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('registerBtn').classList.add('hidden');
+            document.getElementById('userProfile').classList.remove('hidden');
+            // Profil bilgileri
+            if (currentUser) {
+                const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('userInitials').textContent = initials;
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('profileInitials').textContent = initials;
+                document.getElementById('profileName').textContent = currentUser.name;
+                document.getElementById('profileEmail').textContent = currentUser.email;
+            }
+        }
+
+        function updateUIForLogout() {
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('registerBtn').classList.remove('hidden');
+            document.getElementById('userProfile').classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            updateUIForLogout();
+            showHome();
+        }
+
+        // Modal işlemleri
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
+        function openRegisterModal() {
+            document.getElementById('registerModal').style.display = 'block';
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        function switchToRegister() {
+            closeModal('loginModal');
+            openRegisterModal();
+        }
+        function switchToLogin() {
+            closeModal('registerModal');
+            openLoginModal();
+        }
+
+        // Profil menüsü
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Mobil menü
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenuItems').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.getElementById('mobileMenuItems').classList.remove('active');
+        }
+
+        // Hesap makinesi
+        function toggleCalculator() {
+            const calc = document.getElementById('calculator');
+            calc.style.display = (calc.style.display === 'block') ? 'none' : 'block';
+        }
+        let calcValue = '';
+        function appendToCalc(val) {
+            calcValue += val;
+            document.getElementById('calc-display').value = calcValue;
+        }
+        function clearCalc() {
+            calcValue = '';
+            document.getElementById('calc-display').value = '';
+        }
+        function backspace() {
+            calcValue = calcValue.slice(0, -1);
+            document.getElementById('calc-display').value = calcValue;
+        }
+        function calculate() {
+            try {
+                // Güvenlik için sadece temel işlemler
+                // eslint-disable-next-line no-eval
+                const result = eval(calcValue);
+                document.getElementById('calc-display').value = result;
+                calcValue = result.toString();
+            } catch {
+                document.getElementById('calc-display').value = 'Hata';
+                calcValue = '';
+            }
+        }
+
+        // Quiz işlemleri
+        function loadQuizQuestions(quizId) {
+            // Her konu için örnek matematiksel sorular ve cevaplar
+            const quizBank = {
+                functions: [
+                    {
+                        question: "Bir fonksiyonun tanım kümesi nedir?",
+                        options: [
+                            "Fonksiyonun değer aldığı tüm x değerleri",
+                            "Fonksiyonun çıktısı olan y değerleri",
+                            "Fonksiyonun grafiği",
+                            "Fonksiyonun bileşkesi"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "f(x) = 2x + 3 fonksiyonunda f(4) kaçtır?",
+                        options: [
+                            "11",
+                            "8",
+                            "7",
+                            "10"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "f(x) = x² ise f(-3) = ?",
+                        options: [
+                            "-9",
+                            "9",
+                            "6",
+                            "0"
+                        ],
+                        correct: 1
+                    },
+                    {
+                        question: "f(x) = x+1, g(x) = 2x ise (f∘g)(2) = ?",
+                        options: [
+                            "5",
+                            "6",
+                            "7",
+                            "4"
+                        ],
+                        correct: 1
+                    }
+                ],
+                polynomials: [
+                    {
+                        question: "x² - 5x + 6 = 0 denkleminin kökleri toplamı kaçtır?",
+                        options: [
+                            "6",
+                            "5",
+                            "-5",
+                            "-6"
+                        ],
+                        correct: 1
+                    },
+                    {
+                        question: "P(x) = x³ - 2x² + x - 2 polinomunun x=2 için değeri nedir?",
+                        options: [
+                            "0",
+                            "2",
+                            "-2",
+                            "4"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "ax² + bx + c = 0 denkleminin kökleri formülü nedir?",
+                        options: [
+                            "\\( x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a} \\)",
+                            "\\( x = \\frac{b \\pm \\sqrt{a^2-4bc}}{2a} \\)",
+                            "\\( x = \\frac{-a \\pm \\sqrt{b^2-4ac}}{2b} \\)",
+                            "\\( x = \\frac{-b \\pm \\sqrt{a^2-4bc}}{2c} \\)"
+                        ],
+                        correct: 0
+                    }
+                ],
+                derivatives: [
+                    {
+                        question: "f(x) = x³ fonksiyonunun türevi nedir?",
+                        options: [
+                            "3x²",
+                            "x²",
+                            "2x",
+                            "3x"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "f(x) = 5x + 2 fonksiyonunun türevi nedir?",
+                        options: [
+                            "5",
+                            "2",
+                            "x",
+                            "0"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "f(x) = sin(x) fonksiyonunun türevi nedir?",
+                       
+                        options: [
+                            "cos(x)",
+                            "-sin(x)",
+                            "-cos(x)",
+                            "tan(x)"
+                        ],
+                        correct: 0
+                    }
+                ],
+                limits: [
+                    {
+                        question: "\\( \\lim_{x \\to 2} (x^2 - 4)/(x-2) \\) değeri kaçtır?",
+                        options: [
+                            "0",
+                            "2",
+                            "4",
+                            "∞"
+                        ],
+                        correct: 2
+                    },
+                    {
+                        question: "\\( \\lim_{x \\to 0} \\frac{sin(x)}{x} \\) değeri kaçtır?",
+                        options: [
+                            "0",
+                            "1",
+                            "∞",
+                            "Tanımsız"
+                        ],
+                        correct: 1
+                    },
+                    {
+                        question: "\\( \\lim_{x \\to \\infty} \\frac{1}{x} \\) değeri nedir?",
+                        options: [
+                            "0",
+                            "1",
+                            "∞",
+                            "Tanımsız"
+                        ],
+                        correct: 0
+                    }
+                ],
+                complex: [
+                    {
+                        question: "z = 3 + 4i için |z| değeri kaçtır?",
+                        options: [
+                            "5",
+                            "7",
+                            "1",
+                            "4"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "(2 + 3i) + (1 - 2i) = ?",
+                        options: [
+                            "3 + i",
+                            "3 + 5i",
+                            "1 + i",
+                            "2 + i"
+                        ],
+                        correct: 0
+                    }
+                ],
+                analytic: [
+                    {
+                        question: "A(1,2) ve B(4,6) noktaları arası uzaklık kaçtır?",
+                        options: [
+                            "5",
+                            "4",
+                            "3",
+                            "2"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "Doğru denklemi aşağıdakilerden hangisidir?",
+                        options: [
+                            "y = mx + n",
+                            "x^2 + y^2 = r^2",
+                            "y = ax^2 + bx + c",
+                            "x = y"
+                        ],
+                        correct: 0
+                    }
+                ],
+                geometry: [
+                    {
+                        question: "Yarıçapı 3 olan çemberin alanı nedir?",
+                        options: [
+                            "9π",
+                            "6π",
+                            "3π",
+                            "12π"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "Kenarları 6 ve 8 olan dikdörtgenin alanı kaçtır?",
+                        options: [
+                            "48",
+                            "14",
+                            "24",
+                            "36"
+                        ],
+                        correct: 0
+                    }
+                ],
+                trigonometry: [
+                    {
+                        question: "sin(30°) değeri kaçtır?",
+                        options: [
+                            "1/2",
+                            "√3/2",
+                            "1",
+                            "0"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "tan(45°) değeri kaçtır?",
+                        options: [
+                            "1",
+                            "0",
+                            "√3",
+                            "1/2"
+                        ],
+                        correct: 0
+                    },
+                    {
+                        question: "sin²θ + cos²θ = ?",
+                        options: [
+                            "1",
+                            "0",
+                            "2",
+                            "tanθ"
+                        ],
+                        correct: 0
+                    }
+                ]
+            };
+
+            // Soruları karıştır ve ilk 10 tanesini al (varsa)
+            let questions = quizBank[quizId] || [];
+            questions = questions.sort(() => Math.random() - 0.5).slice(0, 10);
+
+            // Eğer soru sayısı 10'dan azsa, tekrar ederek doldur
+            while (questions.length < 10 && questions.length > 0) {
+                questions = questions.concat(questions.slice(0, 10 - questions.length));
+            }
+
+            quizQuestions = questions;
+            currentQuestionIndex = 0;
+            userAnswers = Array(quizQuestions.length).fill(null);
+            quizScore = 0;
+            document.getElementById('total-questions').textContent = quizQuestions.length;
+            showQuizQuestion();
+        }
+
+        function showQuizQuestion() {
+            const q = quizQuestions[currentQuestionIndex];
+            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+            // MathJax destekli soru
+            document.getElementById('question-text').innerHTML = q.question;
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option w-full text-left px-4 py-2 border rounded transition';
+                btn.innerHTML = opt;
+                if (userAnswers[currentQuestionIndex] === idx) {
+                    btn.classList.add('selected');
+                }
+                btn.onclick = () => selectQuizOption(idx);
+                optionsContainer.appendChild(btn);
+            });
+            // Progress bar
+            const percent = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+            document.querySelector('.progress-fill').style.width = percent + '%';
+            // Navigation buttons
+            document.getElementById('prev-question').disabled = currentQuestionIndex === 0;
+            document.getElementById('next-question').textContent = (currentQuestionIndex === quizQuestions.length - 1) ? 'Bitir' : 'Sonraki Soru';
+            document.getElementById('quiz-score').textContent = quizScore;
+
+            // MathJax ile matematiksel ifadeleri render et
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function selectQuizOption(idx) {
+            userAnswers[currentQuestionIndex] = idx;
+            // Yeniden çiz
+            showQuizQuestion();
+        }
+
+        function showPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuizQuestion();
+            }
+        }
+
+        function showNextQuestion() {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                showQuizQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            // Skor hesapla
+            quizScore = 0;
+            let correctCount = 0;
+            quizQuestions.forEach((q, i) => {
+                if (userAnswers[i] === q.correct) {
+                    quizScore += 10;
+                    correctCount++;
+                }
+            });
+            // Sonuç modalı göster
+            document.getElementById('resultScore').textContent = Math.round((correctCount / quizQuestions.length) + 100) + '%';
+            document.getElementById('correctAnswers').textContent = `${correctCount}/${quizQuestions.length}`;
+            document.getElementById('earnedPoints').textContent = quizScore;
+            // Süreyi göster
+            const usedTime = (quizTimeLeft > 0) ? (quizDuration - quizTimeLeft) : quizDuration;
+            const min = Math.floor(usedTime / 60);
+            const sec = usedTime % 60;
+            document.getElementById('completionTime').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+            document.getElementById('quizResultModal').style.display = 'block';
+            // Timer durdur
+            if (quizTimer) {
+                clearInterval(quizTimer);
+                quizTimer = null;
+            }
+        }
+
+        function retakeQuiz() {
+            closeModal('quizResultModal');
+            startQuiz(currentQuiz);
+        }
+
+        // Quiz timer
+        let quizDuration = 900; // Varsayılan 15 dakika
+        function startQuizTimer() {
+            // Süreyi quiz'e göre ayarla
+            const quizTimes = {
+                'functions': 900,
+                'polynomials': 900,
+                'derivatives': 1200,
+                'limits': 1200,
+                'complex': 900,
+                'analytic': 900,
+                'geometry': 900,
+                'trigonometry': 900
+            };
+            quizDuration = quizTimes[currentQuiz] || 900;
+            quizTimeLeft = quizDuration;
+            updateQuizTimerDisplay();
+            if (quizTimer) clearInterval(quizTimer);
+            quizTimer = setInterval(() => {
+                quizTimeLeft--;
+                updateQuizTimerDisplay();
+                if (quizTimeLeft <= 0) {
+                    clearInterval(quizTimer);
+                    quizTimer = null;
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateQuizTimerDisplay() {
+            const min = Math.floor(quizTimeLeft / 60);
+            const sec = quizTimeLeft % 60;
+            document.getElementById('quiz-timer').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        // Fonksiyon grafiği (örnek)
+        function initFunctionGraph() {
+            const ctx = document.getElementById('functionGraph');
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 21}, (_, i) => i - 10),
+                    datasets: [
+                        {
+                            label: 'f(x) = x²',
+                            data: Array.from({length: 21}, (_, i) => Math.pow(i - 10, 2)),
+                            borderColor: '#3b82f6',
+                            fill: false,
+                        },
+                        {
+                            label: 'g(x) = 2x + 1',
+                            data: Array.from({length: 21}, (_, i) => 2 * (i - 10) + 1),
+                            borderColor: '#ef4444',
+                            fill: false,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Karmaşık düzlem (placeholder)
+        function initComplexPlane() {
+            // Eğer karmaşık düzlem için bir canvas varsa burada çizim yapılabilir
+        }
+
+        // Dışarı tıklayınca profil menüsünü kapat
+        document.addEventListener('click', function(e) {
+            const profileMenu = document.getElementById('profileMenu');
+            const userProfile = document.getElementById('userProfile');
+            if (!userProfile.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
